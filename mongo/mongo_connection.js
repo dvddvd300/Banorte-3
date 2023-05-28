@@ -74,6 +74,4 @@ function upload() {
     uploadData().catch(console.error);
 }
 
-upload();
-
 /*  */
