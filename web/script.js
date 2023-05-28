@@ -1,14 +1,24 @@
 document.addEventListener('DOMContentLoaded', function () {
+
+
     // Initialize heatmap instance
     var heatmapInstance = h337.create({
         container: document.getElementById('heatmap')
+    });
+
+
+    let startTime;
+
+    // Store the start time when the page is loaded
+    window.addEventListener('load', function () {
+        startTime = Date.now();
     });
 
     // Track mouse movements
     document.addEventListener('mousemove', function (e) {
         var x = e.pageX;
         var y = e.pageY;
-        var timestamp = Date.now();
+        var timestamp = Date.now() - startTime;
 
         // Add data point to the heatmap
         heatmapInstance.addData({
