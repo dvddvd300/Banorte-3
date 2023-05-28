@@ -1,36 +1,107 @@
 import json
 from sklearn.cluster import KMeans
 
-# Load the JSON data
-with open('machinepy/coordinates.json') as json_file:
-    data = json.load(json_file)
+# Function to analyze a heatmap
+def analyze_heatmap(coordinates):
+    # Perform K-means clustering
+    kmeans = KMeans(n_clusters=k)
+    kmeans.fit(coordinates)
 
-# Extract x, y, and timestamp from the JSON data
-coordinates = [[entry['x'], entry['y']] for entry in data]
+    # Get the cluster labels
+    clusters = kmeans.labels_
+
+    # Count the number of data points in each cluster
+    cluster_counts = {}
+    for cluster in clusters:
+        cluster_counts[cluster] = cluster_counts.get(cluster, 0) + 1
+
+    # Sort the clusters by count in descending order
+    sorted_clusters = sorted(cluster_counts.items(), key=lambda x: x[1], reverse=True)
+
+    # Get the most visited coordinates
+    most_visited_clusters = sorted_clusters[:k]
+    most_visited_indices = [cluster[0] for cluster in most_visited_clusters]
+    most_visited_coordinates = [kmeans.cluster_centers_[index] for index in most_visited_indices]
+
+    # Calculate the average time spent, frequency of visits, and total time spent on the webpage
+    results = []
+    total_time = 0
+    for cluster in most_visited_clusters:
+        cluster_index = cluster[0]
+        cluster_entries = [coordinates[i] for i in range(len(coordinates)) if clusters[i] == cluster_index]
+        time_sum = sum(entry[2] for entry in cluster_entries)
+        average_time = time_sum / len(cluster_entries) / 1000  # Convert from milliseconds to seconds
+        frequency = len(cluster_entries)
+        results.append((average_time, frequency))
+        total_time += max(entry[2] for entry in cluster_entries) - min(entry[2] for entry in cluster_entries)
+
+    # Convert total time to minutes
+    total_time_minutes = total_time / 1000 / 60
+
+    return most_visited_coordinates, results, total_time_minutes
+
+# Load the JSON data for Banorte Portal A
+with open('coordinate.json') as json_file:
+    data1 = json.load(json_file)
+
+# Extract x, y, and timestamp from the JSON data for Banorte Portal A
+coordinates1 = [[entry['x'], entry['y'], entry['timestamp']] for entry in data1]
+
+# Load the JSON data for Banorte Portal B
+with open('coordinates.json') as json_file:
+    data2 = json.load(json_file)
+
+# Extract x, y, and timestamp from the JSON data for Banorte Portal B
+coordinates2 = [[entry['x'], entry['y'], entry['timestamp']] for entry in data2]
 
 # Define the number of clusters (k) based on the expected number of most visited coordinates
 k = 3
 
-# Perform K-means clustering
-kmeans = KMeans(n_clusters=k)
-kmeans.fit(coordinates)
+# Analyze Banorte Portal A
+most_visited_coordinates1, results1, total_time_minutes1 = analyze_heatmap(coordinates1)
 
-# Get the cluster labels
-clusters = kmeans.labels_
+# Analyze Banorte Portal B
+most_visited_coordinates2, results2, total_time_minutes2 = analyze_heatmap(coordinates2)
 
-# Count the number of data points in each cluster
-cluster_counts = {}
-for cluster in clusters:
-    cluster_counts[cluster] = cluster_counts.get(cluster, 0) + 1
+# Open a text file for writing
+with open('heatmap_comparison_results.otd', 'w') as file:
 
-# Sort the clusters by count in descending order
-sorted_clusters = sorted(cluster_counts.items(), key=lambda x: x[1], reverse=True)
+    # Redirect the standard output to the text file
+    import sys
+    sys.stdout = file
 
-# Get the most visited coordinates
-most_visited_clusters = sorted_clusters[:k]
-most_visited_indices = [cluster[0] for cluster in most_visited_clusters]
-most_visited_coordinates = [kmeans.cluster_centers_[index] for index in most_visited_indices]
+    # Report the comparisons between the two heatmaps
+    print('Comparison of Heatmap Results:')
+    print('------------------------------------')
+    print('Banorte Portal A:')
+    print('Most visited coordinates:')
+    for i, coord in enumerate(most_visited_coordinates1):
+        average_time, frequency = results1[i]
+        print(f'Coordinate {i+1}: X: {coord[0]}, Y: {coord[1]}, Average Time: {average_time:.2f} seconds, Frequency: {frequency}')
+    print(f'Total time spent on the webpage: {total_time_minutes1:.2f} minutes')
+    print('------------------------------------')
+    print('Banorte Portal B:')
+    print('Most visited coordinates:')
+    for i, coord in enumerate(most_visited_coordinates2):
+        average_time, frequency = results2[i]
+        print(f'Coordinate {i+1}: X: {coord[0]}, Y: {coord[1]}, Average Time: {average_time:.2f} seconds, Frequency: {frequency}')
+    print(f'Total time spent on the webpage: {total_time_minutes2:.2f} minutes')
+    print('------------------------------------')
 
-print('Most visited coordinates:')
-for coord in most_visited_coordinates:
-    print(f'X: {coord[0]}, Y: {coord[1]}')
+    # Perform comparisons between the heatmaps and report the differences
+
+    # Example comparison: Total time spent on the webpage
+    time_difference = total_time_minutes2 - total_time_minutes1
+    if time_difference > 0:
+        print(f'Banorte Portal B shows {time_difference:.2f} minutes more time spent on the webpage compared to Banorte Portal A.')
+    elif time_difference < 0:
+        print(f'Banorte Portal A shows {-time_difference:.2f} minutes more time spent on the webpage compared to Banorte Portal B.')
+    else:
+        print('Both heatmaps show the same total time spent on the webpage.')
+
+# Restore the standard output
+sys.stdout = sys.__stdout__
+
+
+# Perform other comparisons as needed
+# ...
