@@ -90,18 +90,20 @@ with open('heatmap_comparison_results.otd', 'w') as file:
 
     # Perform comparisons between the heatmaps and report the differences
 
-    # Example comparison: Total time spent on the webpage
+    # Set the threshold values
+    max_time_difference = -2  # Maximum acceptable time difference in minutes
+
+    # Compare the total time spent on the webpage
     time_difference = total_time_minutes2 - total_time_minutes1
-    if time_difference > 0:
-        print(f'Banorte Portal B shows {time_difference:.2f} minutes more time spent on the webpage compared to Banorte Portal A.')
-    elif time_difference < 0:
-        print(f'Banorte Portal A shows {-time_difference:.2f} minutes more time spent on the webpage compared to Banorte Portal B.')
+
+    # Example comparison: Total time spent on the webpage
+    if time_difference < max_time_difference:
+        print(f'Banorte Portal B shows {-time_difference:.2f} minutes less time spent on the webpage compared to Banorte Portal A, indicating it is more efficient.')
     else:
-        print('Both heatmaps show the same total time spent on the webpage.')
-
-# Restore the standard output
-sys.stdout = sys.__stdout__
-
+        print(f'Banorte Portal A shows {-time_difference:.2f} minutes less time spent on the webpage compared to Banorte Portal B, indicating it is more efficient.')
 
 # Perform other comparisons as needed
 # ...
+
+# Restore the standard output
+sys.stdout = sys.__stdout__
