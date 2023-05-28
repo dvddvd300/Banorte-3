@@ -59,12 +59,26 @@ document.addEventListener('DOMContentLoaded', function () {
         document.body.removeChild(a);
     }
 
+
+    window.onbeforeunload = confirmExit;
+    function confirmExit() {
+        var jsonData = convertDataPointsToJson();
+        uploadData(jsonData); 
+        return false;
+    }
     // Example usage to convert and download JSON file
-    document.addEventListener('keydown', function (e) {
-        // Press 'D' key to convert and download JSON file
-        if (e.key === 'd' || e.key === 'D') {
-            var jsonData = convertDataPointsToJson();
-            downloadJsonFile(jsonData, 'heatmap_data.json');
-        }
-    });
 });
+
+async function uploadData(jsonFile) {
+    const data = JSON.parse(jsonFile);
+    let api = await fetch(`https://us-east-2.aws.data.mongodb-api.com/app/data-iewax/endpoint/Upload`, {
+        method: "POST",
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data),
+    })
+    let response = await api.json()
+    console.log(response);
+    return response
+}

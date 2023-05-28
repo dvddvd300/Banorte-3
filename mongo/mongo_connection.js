@@ -1,6 +1,6 @@
 const fs = require('fs');
 const { MongoClient, ServerApiVersion } = require('mongodb');
-const uri = "mongodb+srv://juanpgtzg:oOvMeF7EmK6QPCoY@webdata.w6ffrza.mongodb.net/?retryWrites=true&w=majority";
+const uri = "mongodb+srv://juanpgtzg:ljIgvpQJzlYZJwfF@webdata.w6ffrza.mongodb.net/?retryWrites=true&w=majority";
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
@@ -18,25 +18,6 @@ const collectionName = 'json_files';
 // Read the JSON file
 const jsonData = fs.readFileSync('mongo/coordinates.json');
 const data = JSON.parse(jsonData);
-
-/* Converts the JSON file into mongodb documents and uploads them */
-async function uploadData() {
-    try {
-        // Connect to the MongoDB server
-        await client.connect();
-
-        // Access the database and collection
-        const db = client.db(dbName);
-        const collection = db.collection(collectionName);
-
-        // Insert the data into the collection
-        const result = await collection.insertMany(data);
-        console.log(`${result.insertedCount} documents inserted.`);
-    } finally {
-        // Close the MongoDB connection
-        await client.close();
-    }
-}
 
 /* Receives all data from the server and outputs it into a JSON file */
 async function downloadJSON() {
@@ -70,8 +51,4 @@ function download() {
     downloadJSON().catch(console.error);
 }
 
-function upload() {
-    uploadData().catch(console.error);
-}
-
-/*  */
+download();
